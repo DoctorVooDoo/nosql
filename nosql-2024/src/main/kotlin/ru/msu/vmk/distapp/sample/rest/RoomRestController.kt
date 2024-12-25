@@ -3,15 +3,23 @@ package ru.msu.vmk.distapp.sample.rest
 import org.springframework.web.bind.annotation.*
 import ru.msu.vmk.distapp.sample.dto.RoomDto
 import ru.msu.vmk.distapp.sample.dto.UpdateRoomDto
+import ru.msu.vmk.distapp.sample.dto.UserDto
 import ru.msu.vmk.distapp.sample.model.Room
+import ru.msu.vmk.distapp.sample.repository.OpenSearchRoomRepository
 import ru.msu.vmk.distapp.sample.repository.RoomRepository
 import java.util.UUID
 
 @RestController
 @RequestMapping("/room")
 class RoomRestController(
-    val roomRepository: RoomRepository
+    val roomRepository: RoomRepository,
+    val openSearchRoomRepository: OpenSearchRoomRepository
 ) {
+
+    @GetMapping("/search")
+    fun searchRooms(@RequestParam query: String): List<RoomDto> {
+        return openSearchRoomRepository.search(query)
+    }
 
     @GetMapping
     fun listRooms(): List<RoomDto> {
@@ -28,7 +36,9 @@ class RoomRestController(
             location = room.location,
             amenities = room.amenities
         )
-        return roomRepository.saveRoom(newRoom).toDto()
+        return roomRepository.saveRoom(newRoom).toDto().also {
+            openSearchRoomRepository.save(it)
+        }
     }
 
     @PutMapping("/{id}")
@@ -43,12 +53,15 @@ class RoomRestController(
                     amenities = room.amenities
                 )
             )
-        }?.toDto()
+        }?.toDto()?.also {
+            openSearchRoomRepository.save(it)
+        }
     }
 
     @DeleteMapping("/{id}")
     fun deleteRoom(@PathVariable id: String) {
         roomRepository.deleteRoom(id)
+        openSearchRoomRepository.delete(id)
     }
 
     private fun Room.toDto() = RoomDto(

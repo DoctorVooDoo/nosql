@@ -15,6 +15,11 @@ class PaymentRepository(val mongoTemplate: MongoTemplate) {
         return mongoTemplate.find(Query.query(criteria), Payment::class.java)
     }
 
+    fun listPaymentsByBooking(bookingId: String): List<Payment> {
+        val criteria = Criteria.where("bookingId").`is`(bookingId)
+        return mongoTemplate.find(Query.query(criteria), Payment::class.java)
+    }
+
     fun getPaymentById(paymentId: String): Payment? {
         return mongoTemplate.findById(paymentId)
     }

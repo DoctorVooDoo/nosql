@@ -6,7 +6,7 @@ import org.springframework.boot.runApplication
 
 
 @SpringBootApplication(
-	exclude = [ElasticsearchDataAutoConfiguration::class]
+    exclude = [ElasticsearchDataAutoConfiguration::class]
 )
 class SampleApplication
 

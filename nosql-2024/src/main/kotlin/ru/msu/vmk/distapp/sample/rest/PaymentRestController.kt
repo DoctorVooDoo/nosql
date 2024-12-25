@@ -18,6 +18,11 @@ class PaymentRestController(
         return paymentRepository.listPaymentsByUser(userId).map { it.toDto() }
     }
 
+    @GetMapping("/booking/{bookingId}")
+    fun listPaymentsByBooking(@PathVariable bookingId: String): List<PaymentDto> {
+        return paymentRepository.listPaymentsByBooking(bookingId).map { it.toDto() }
+    }
+
     @PostMapping
     fun addPayment(@RequestBody payment: UpdatePaymentDto): PaymentDto {
         val newPayment = Payment(

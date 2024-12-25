@@ -5,13 +5,20 @@ import ru.msu.vmk.distapp.sample.dto.UpdateUserDto
 import ru.msu.vmk.distapp.sample.dto.UserDto
 import ru.msu.vmk.distapp.sample.model.User
 import ru.msu.vmk.distapp.sample.repository.UserRepository
+import ru.msu.vmk.distapp.sample.repository.OpenSearchUserRepository
 import java.util.UUID
 
 @RestController
 @RequestMapping("/user")
 class UserRestController(
-    val userRepository: UserRepository
+    val userRepository: UserRepository,
+    val openSearchUserRepository: OpenSearchUserRepository
 ) {
+
+    @GetMapping("/search")
+    fun searchUsers(@RequestParam query: String): List<UserDto> {
+        return openSearchUserRepository.search(query)
+    }
 
     @GetMapping
     fun listUsers(): List<UserDto> {
@@ -26,7 +33,9 @@ class UserRestController(
             email = user.email,
             phone = user.phone
         )
-        return userRepository.saveUser(newUser).toDto()
+        return userRepository.saveUser(newUser).toDto().also {
+            openSearchUserRepository.save(it)
+        }
     }
 
     @PutMapping("/{id}")
@@ -39,12 +48,15 @@ class UserRestController(
                     phone = user.phone
                 )
             )
-        }?.toDto()
+        }?.toDto()?.also {
+            openSearchUserRepository.save(it)
+        }
     }
 
     @DeleteMapping("/{id}")
     fun deleteUser(@PathVariable id: String) {
         userRepository.deleteUser(id)
+        openSearchUserRepository.delete(id)
     }
 
     private fun User.toDto() = UserDto(
